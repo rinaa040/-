@@ -54,7 +54,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    screen.fill('white')
+    screen.fill('black')
     all_sprites.draw(screen)
     all_sprites.update(event)
     pygame.display.flip()
