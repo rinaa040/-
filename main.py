@@ -1,3 +1,4 @@
+#ЗАДАЧА ПРО МАШИНКУ
 import pygame
 import sys
 import os
