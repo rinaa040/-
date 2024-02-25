@@ -6,9 +6,10 @@ import sys
 # Изображение не получится загрузить
 # без предварительной инициализации pygame
 pygame.init()
-size = width, height = 500, 500
+size = width, height = 600, 300
 screen = pygame.display.set_mode(size)
 all_sprites = pygame.sprite.Group()
+clock = pygame.time.Clock()
 
 
 def load_image(name, colorkey=None):
@@ -27,35 +28,37 @@ def load_image(name, colorkey=None):
     return image
 
 
-class Bomb(pygame.sprite.Sprite):
-    image = load_image("bomb.png")
+class LastScreen(pygame.sprite.Sprite):
+    image = load_image("gameover.png")
     image_boom = load_image("boom.png")
 
     def __init__(self, *group):
         # НЕОБХОДИМО вызвать конструктор родительского класса Sprite.
         # Это очень важно!!!
         super().__init__(*group)
-        self.image = Bomb.image
-        self.rect = self.image.get_rect()
-        self.rect.x = random.randrange(width - self.image.get_rect().size[0])
-        self.rect.y = random.randrange(height - self.image.get_rect().size[1])
+        self.image = LastScreen.image
+        self.pos_y = 0
+        self.pos_x = -600
+        self.size = self.image.get_rect().size
+        self.rect = self.image.get_rect().move(
+            self.size[0] * self.pos_x, self.size[1] * self.pos_y)
 
-    def update(self, *args):
-        if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
-                self.rect.collidepoint(args[0].pos):
-            self.image = self.image_boom
+    def move_right(self):
+        self.pos_x += 1
+        self.rect = self.image.get_rect().move(
+            self.pos_x, self.pos_y)
 
 
 running = True
-for _ in range(20):
-    Bomb(all_sprites)
+last_screen = LastScreen(all_sprites)
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
-    screen.fill('black')
+    if last_screen.pos_x < 0:
+        last_screen.move_right()
+    screen.fill('blue')
     all_sprites.draw(screen)
-    all_sprites.update(event)
     pygame.display.flip()
+    clock.tick(200)
 pygame.quit()
