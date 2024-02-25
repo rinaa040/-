@@ -1,22 +1,14 @@
-#ЗАДАЧА ПРО МАШИНКУ
 import pygame
-import sys
+import random
 import os
+import sys
 
+# Изображение не получится загрузить
+# без предварительной инициализации pygame
 pygame.init()
-size = width, height = 600, 95
+size = width, height = 500, 500
 screen = pygame.display.set_mode(size)
-player = None
-
 all_sprites = pygame.sprite.Group()
-
-fps = 50
-clock = pygame.time.Clock()
-
-
-def terminate():
-    pygame.quit()
-    sys.exit()
 
 
 def load_image(name, colorkey=None):
@@ -35,55 +27,35 @@ def load_image(name, colorkey=None):
     return image
 
 
-class Player(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
-        super().__init__(all_sprites)
-        self.direction = 0
-        self.image = load_image('car2.png')
-        self.pos_y = pos_y
-        self.pos_x = pos_x
-        self.size = self.image.get_rect().size
-        self.rect = self.image.get_rect().move(
-            self.size[0] * pos_x, self.size[1] * pos_y)
+class Bomb(pygame.sprite.Sprite):
+    image = load_image("bomb.png")
+    image_boom = load_image("boom.png")
 
-    def move_right(self):
-        self.direction = 0
-        self.pos_x += 2
-        self.rect = self.image.get_rect().move(
-            self.pos_x, self.pos_y)
+    def __init__(self, *group):
+        # НЕОБХОДИМО вызвать конструктор родительского класса Sprite.
+        # Это очень важно!!!
+        super().__init__(*group)
+        self.image = Bomb.image
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randrange(width - self.image.get_rect().size[0])
+        self.rect.y = random.randrange(height - self.image.get_rect().size[1])
 
-    def move_left(self):
-        self.direction = 1
-        self.pos_x -= 2
-        # self.image = pygame.transform.flip(self.image, True, False)
-        self.rect = self.image.get_rect().move(
-            self.pos_x, self.pos_y)
+    def update(self, *args):
+        if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
+                self.rect.collidepoint(args[0].pos):
+            self.image = self.image_boom
 
 
-flag = False
 running = True
-player = Player(2, 0)
-# generate_level(load_level('field.txt'))
+for _ in range(20):
+    Bomb(all_sprites)
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                pass
-    if player.pos_x == 600 - player.size[0]:
-        flag = True
-        player.image = pygame.transform.flip(player.image, True, False)
-    if player.pos_x == 0:
-        flag = False
-        player.image = pygame.transform.flip(player.image, True, False)
-    if not flag:
-        player.move_right()
-    else:
-        player.move_left()
+
     screen.fill('white')
     all_sprites.draw(screen)
-    all_sprites.update()
-    clock.tick(50)
+    all_sprites.update(event)
     pygame.display.flip()
 pygame.quit()
